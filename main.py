@@ -1,5 +1,6 @@
 import os, platform, socket
 import cpu, gpu, mem, config
+import argparse
 
 def get_local_ip():  # there should be a better way to do this but this is good enough
     try:
@@ -56,4 +57,18 @@ def info():
 
     print('\n')
 
-info()
+
+def main():
+    parser = argparse.ArgumentParser(description="mfetch")
+    parser.add_argument("--logo", metavar="DIR", help="Change logo directory. Use ${BASE_DIR}/ if in the same folder as main.py")
+    
+    args = parser.parse_args()
+    
+    if args.logo:
+        config.change_logo(args.logo)
+        print(f"Logo directory changed to: {args.logo}")
+    else:
+        info()
+
+if __name__ == "__main__":
+    main()

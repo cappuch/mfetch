@@ -78,7 +78,10 @@ def get_current_gpu_driver_linux():
         if line:
             return line.split(":")[1].strip()
     except Exception as e:
-        print(f"Error: {e}")
+        if "glxinfo" in str(e):
+            print('Please install mesa-demos.')
+        else:
+            print(f"Error: {e}")
     return None
 
 def get_current_gpu_driver_macos():

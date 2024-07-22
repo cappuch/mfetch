@@ -41,6 +41,8 @@ class LinuxCPUInfo(CPUInfoBase):
                 for line in f:
                     if ':' in line:
                         name, value = [s.strip() for s in line.split(':', 1)]
+                        if name == 'model name': # very hacky name change lol
+                            name = 'ProcessorNameString'
                         self.info[name] = value
         except FileNotFoundError:
             warnings.warn("/proc/cpuinfo not found", UserWarning)
