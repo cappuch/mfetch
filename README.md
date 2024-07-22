@@ -1,6 +1,7 @@
 pure python fetching util - slow but cross-platform, with cross platform being the main focus
 
 cpu.py (custom) based off of cpuinfo by Pearu Peterson, but re-written by me (to be smaller lol)
+if using arch - install mesa-demos (`sudo pacman -S mesa-demos`) for opengl info
 
 cow icon (default icon is from https://www.asciiart.eu/animals/cows)
 
