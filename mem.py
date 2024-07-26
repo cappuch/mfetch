@@ -1,6 +1,7 @@
 import os
 import platform
-
+import subprocess
+import re
 def ram_info():
     total_ram = 0
     used_ram = 0
@@ -19,17 +20,33 @@ def ram_info():
             used_ram = total_ram - available_ram
         
         elif platform.system() == "Darwin":
-            vm_stat = os.popen('vm_stat').read().split('\n')
-            page_size = int(os.popen('pagesize').read().strip())
-            
-            free_pages = int(vm_stat[1].split()[2].replace('.', ''))
-            active_pages = int(vm_stat[2].split()[2].replace('.', ''))
-            inactive_pages = int(vm_stat[3].split()[2].replace('.', ''))
-            speculative_pages = int(vm_stat[4].split()[2].replace('.', ''))
-            wired_pages = int(vm_stat[6].split()[2].replace('.', ''))
-            
-            total_ram = int(os.popen('sysctl -n hw.memsize').read().strip())
-            used_ram = (active_pages + inactive_pages + wired_pages) * page_size
+            ps = subprocess.Popen(['ps', '-caxm', '-orss,comm'], stdout=subprocess.PIPE).communicate()[0].decode()
+            vm = subprocess.Popen(['vm_stat'], stdout=subprocess.PIPE).communicate()[0].decode()
+
+            # Iterate processes
+            processLines = ps.split('\n')
+            sep = re.compile('[\s]+')
+            rssTotal = 0 # kB
+            for row in range(1,len(processLines)):
+                rowText = processLines[row].strip()
+                rowElements = sep.split(rowText)
+                try:
+                    rss = float(rowElements[0]) * 1024
+                except:
+                    rss = 0 # ignore...
+                rssTotal += rss
+
+            # Process vm_stat
+            vmLines = vm.split('\n')
+            sep = re.compile(':[\s]+')
+            vmStats = {}
+            for row in range(1,len(vmLines)-2):
+                rowText = vmLines[row].strip()
+                rowElements = sep.split(rowText)
+                vmStats[(rowElements[0])] = int(rowElements[1].strip('\.')) * 4096
+
+            used_ram = vmStats["Pages active"]
+            total_ram = rssTotal
         
         elif platform.system() == "Windows":
             import ctypes
@@ -47,7 +64,7 @@ def ram_info():
                     ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
                 ]
             
-            memoryStatus = MEMORYSTATUSEX() # SEX
+            memoryStatus = MEMORYSTATUSEX()
             memoryStatus.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
             ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(memoryStatus))
             
@@ -56,9 +73,9 @@ def ram_info():
         
         else:
             raise NotImplementedError(f"Unsupported operating system: {platform.system()}")
-        
-        return total_ram, used_ram
     
+        return total_ram, used_ram
+
     except Exception as e:
         print(f"Error getting RAM: {e}")
         return 0, 0

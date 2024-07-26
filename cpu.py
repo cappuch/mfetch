@@ -50,24 +50,16 @@ class LinuxCPUInfo(CPUInfoBase):
 class DarwinCPUInfo(CPUInfoBase):
     def __init__(self):
         super().__init__()
-        self.info['arch'] = getoutput(['uname', '-m'])
-        self.info['sysctl_hw'] = self.get_sysctl_hw()
-
-    def get_sysctl_hw(self):
-        hw_info = {}
-        output = getoutput(['sysctl', 'hw'])
-        if output:
-            for line in output.splitlines():
-                if ':' in line:
-                    key, value = [s.strip() for s in line.split(':', 1)]
-                    hw_info[key] = value
-        return hw_info
+        self.cpu_name = getoutput(['Sysctl', '-n', 'machdep.cpu.brand_string'])
+        self.info = {}
+        self.info['ProcessorNameString'] = self.cpu_name
 
 class WindowsCPUInfo(CPUInfoBase):
     def __init__(self):
         super().__init__()
         self.info['arch'] = platform.machine()
         self.info.update(self.get_registry_info())
+
 
     def get_registry_info(self):
         import winreg

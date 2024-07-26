@@ -89,8 +89,9 @@ def get_current_gpu_driver_macos():
         output = subprocess.check_output("system_profiler SPDisplaysDataType", shell=True)
         lines = output.decode().split("\n")
         for line in lines:
-            if "Driver Version:" in line:
+            if "EFI Driver Version:" in line:
                 return line.split(":")[1].strip()
+        return "Apple Silicon APU - No driver publicily checkable."
     except Exception as e:
         print(f"Error: {e}")
     return None
